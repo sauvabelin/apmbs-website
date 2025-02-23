@@ -144,6 +144,15 @@ useHead({
   ],
 });
 
+useSeoMeta({
+  title: "Association pour la Maison de la Brigade de Sauvabelin",
+  ogTitle: "Association pour la Maison de la Brigade de Sauvabelin",
+  description:
+    "Présentation et réservation des différents locaux et cabanes de l'APMBS",
+  ogDescription:
+    "Présentation et réservation des différents locaux et cabanes de l'APMBS",
+});
+
 watch(
   () => route.fullPath,
   () => {

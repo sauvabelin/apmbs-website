@@ -5,6 +5,15 @@ useHead({
   title: "La Cabane de la Moillettaz - APMBS",
 });
 
+useSeoMeta({
+  title: "La Cabane de la Moillettaz - APMBS",
+  ogTitle: "La Cabane de la Moillettaz - APMBS",
+  description:
+    "La Cabane de la Moillettaz est une cabane scoute située à La Moillettaz idéale pour des week-ends de patrouille",
+  ogDescription:
+    "La Cabane de la Moillettaz est une cabane scoute située à La Moillettaz idéale pour des week-ends de patrouille",
+});
+
 const pictures = ref([
   "https://images.unsplash.com/photo-1723015614356-4d41137469fb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw4fHx8ZW58MHx8fHx8",
   "https://plus.unsplash.com/premium_photo-1721136876543-d747e1aa48b7?q=80&w=1996&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
