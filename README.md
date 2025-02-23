@@ -1,75 +1,15 @@
-# Nuxt 3 Minimal Starter
+# Site web de l'APMBS
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Le site est build en statique avec Nuxt et Vue 3 par une github actions à chaque commit sur `main` puis le code est automatiquement uploadé en FTP sur Hostpoint.
 
-## Setup
+## Fonctionnement
 
-Make sure to install the dependencies:
+La seule partie dynamique du site est le composant `ReservationBlock.vue` qui prend en props un unique `id` de cabane. C'est identifiant doit correspondre à celui de la cabane correspondante dans le netBS.
 
-```bash
-# npm
-npm install
+# Développer
 
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+1. Cloner le repository
+2. Faire un `npm install`
+3. Faire un `npm run dev` pour bosser (attention le site ira pomper dans le netBS de prod, pour changer l'URL, éditez le fichier `nuxt.config.js`)
+4. Faire des modifs
+5. Faire un `git push` pour trigger la github actions et mettre le site à jour

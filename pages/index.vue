@@ -2,6 +2,10 @@
 import { ref } from "vue";
 const modalOpen = ref(false);
 
+useHead({
+  title: "APMBS - Brigade de Sauvabelin",
+});
+
 onMounted(() => {
   const visited = localStorage.getItem("visited");
   if (visited) {

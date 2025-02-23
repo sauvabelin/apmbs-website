@@ -123,6 +123,27 @@
 const menuOpen = ref(false);
 const route = useRoute();
 
+useHead({
+  link: [
+    {
+      rel: "icon",
+      sizes: "32x32",
+      type: "image/png",
+      href: "/logo32.png",
+    },
+    {
+      rel: "icon",
+      sizes: "192x192",
+      type: "image/png",
+      href: "/logo192.png",
+    },
+    {
+      rel: "apple-touch-icon",
+      href: "/logo180.png",
+    },
+  ],
+});
+
 watch(
   () => route.fullPath,
   () => {
