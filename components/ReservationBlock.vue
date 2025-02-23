@@ -131,10 +131,12 @@ const columns = mapCurrent({ lg: 2 }, 1);
 
 function tryParse(value: string) {
   try {
-    const val = JSON.parse(value);
+    const val = JSON.parse(value.replace("\r", "").replace("\n", ""));
     if (!val) {
       return undefined;
     }
+
+    return val;
   } catch {
     return undefined;
   }
@@ -188,6 +190,8 @@ const schema = z.object({
   }),
 });
 
+console.log(cabane);
+
 const validated = reactive({
   conditions: cabane.value.conditions.map(() => true),
 });
@@ -195,12 +199,12 @@ const validated = reactive({
 const allGood = computed(() => validated.conditions.every((c: boolean) => c));
 
 const state = reactive({
-  email: "yo@yo.yo",
-  firstname: "prenom",
-  lastname: "nom",
-  phone: "01234567899",
-  unit: "bs",
-  description: "yoyoyo",
+  email: "",
+  firstname: "",
+  lastname: "",
+  phone: "",
+  unit: "",
+  description: "",
   timePeriod: 0,
 });
 
