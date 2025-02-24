@@ -145,7 +145,7 @@ const pictures = ref([
             Informations Pratiques
           </h3>
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2743.922384768282!2d6.61781237669876!3d46.54922216039375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478c31f1693e545b%3A0xbc609b2cafdf6e6a!2sCabane%20scoute%20de%20la%20Tuile!5e0!3m2!1sfr!2sch!4v1723641115231!5m2!1sfr!2sch"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7540.089309671113!2d6.613687066014554!3d46.54889655360876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478c31f1693e545b%3A0xbc609b2cafdf6e6a!2sCabane%20scoute%20de%20la%20Tuile!5e0!3m2!1sfr!2sch!4v1740398900538!5m2!1sfr!2sch"
             style="border: 0"
             allowfullscreen=""
             loading="lazy"
