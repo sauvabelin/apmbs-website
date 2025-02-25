@@ -15,20 +15,22 @@ useSeoMeta({
 });
 
 const pictures = ref([
-  "https://images.unsplash.com/photo-1723015614356-4d41137469fb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw4fHx8ZW58MHx8fHx8",
-  "https://plus.unsplash.com/premium_photo-1721136876543-d747e1aa48b7?q=80&w=1996&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1723082053696-f94b182d4693?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1723084701888-658cf3b8f515?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1722925541914-ae7cf154d606?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1722486110902-3e1a6e2600e1?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1723049235305-65395182241f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "/moillettaz/out.webp",
+  "/moillettaz/out2.webp",
+  "/moillettaz/cuisine.webp",
+  "/moillettaz/dortoir1.webp",
+  "/moillettaz/dortoir2.webp",
+  "/moillettaz/in1.webp",
+  "/moillettaz/salon.webp",
+  "/moillettaz/toilets.webp",
+  "/moillettaz/parking.webp"
 ]);
 </script>
 
 <template>
   <div class="mx-auto lg:py-10 container">
     <img
-      src="https://plus.unsplash.com/premium_photo-1673374235916-79c1a9016ce0?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      src="/moillettaz/banner.webp"
       alt="La Moillettaz"
       class="w-full h-96 object-cover lg:rounded-xl"
     />
