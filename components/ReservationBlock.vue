@@ -20,17 +20,19 @@
               expanded
               is24hr
               is-dark="system"
-              :disabled-dates="cabane.disabledDates"
+              :disabled-dates="disabledDates"
               :rules="cabane.availabilityRules"
+              :attributes="monthlyAttributes"
               :mode="
                 (cabane.timePeriods || []).length > 0 ? undefined : 'dateTime'
               "
               :columns="columns"
+              @update:pages="onPageChange"
           /></client-only>
           <UFormGroup
             label="Période de réservation"
             name="timePeriod"
-            v-if="cabane.timePeriods.length > 0"
+            v-if="(cabane.timePeriods || []).length > 0"
             class="mt-5"
           >
             <USelect
@@ -116,6 +118,8 @@ import { ref } from "vue";
 import { useScreens } from "vue-screen-utils";
 import { z } from "zod";
 import type { FormSubmitEvent } from "#ui/types";
+import parseGoogleEventDates from "~/utils/parseGoogleEventDates";
+import { add, differenceInDays } from "date-fns";
 
 const runtimeConfig = useRuntimeConfig();
 const props = defineProps(["id"]);
@@ -145,9 +149,9 @@ function tryParse(value: string) {
 /* Calendar configuration */
 const cabane = ref<{
   nom: string;
-  availabilityRules: object;
+  availabilityRules: object | undefined;
   prices: string | undefined;
-  disabledDates: object;
+  disabledDates: Array<object> | undefined;
   conditions: Array<string>;
   timePeriods: Array<{
     value: number;
@@ -158,18 +162,123 @@ const cabane = ref<{
     minuteEnd: string;
   }>;
 }>(
+  {
+    nom: "Moillettaz",
+    availabilityRules: undefined,
+    prices: undefined,
+    disabledDates: undefined,
+    conditions: [
+      "Je fais cette réservation pour une activité scoute\r",
+      "J'amène mes sacs poubelle taxés et les emmène avec moi\r",
+      "Je respecte les pâturages, forêts et ruisseaux environnants\r",
+      "Je reprend mes déchets et tout le matériel ammené en partant\r",
+      "Je déclare tout dégât ou problème rencontré sans délai\r",
+      "Avant l'arrivée de l'intendant(e), j'ai nettoyé les locaux, fermé les fenêtres et volets et éteint les lumières\r",
+      "J'attends l'intendant(e) pour effectuer l'état des lieux et la remise des clés",
+    ],
+    timePeriods: [],
+  }
+  /*
   await fetch(
     `${runtimeConfig.public.baseUrl}/api/v1/public/netBS/apmbs/cabane-metadata/${props.id}`
   ).then((res) =>
     res.json().then((data) => {
-      return {
-        ...data,
-        disabledDates: tryParse(data.disabledDates),
-        availabilityRules: tryParse(data.availabilityRules),
-      };
-    })
-  )
+    const availabilityRulesParsed = tryParse(data.availabilityRules);
+    const availabilityRules =
+      availabilityRulesParsed && availabilityRulesParsed.length > 0
+        ? availabilityRulesParsed
+        : undefined;
+    return {
+      ...data,
+      disabledDates: tryParse(data.disabledDates),
+      availabilityRules,
+    };
+  })
 );
+*/
+);
+
+/* Conflicts attributes */
+const monthlyAttributes = ref<Array<object>>([]);
+const monthlyDisabledDates = ref<Array<Date>>([]);
+const disabledDates = computed(() => [
+  ...monthlyDisabledDates.value,
+  ...(cabane.value.disabledDates || []),
+]);
+
+const calendarLoading = ref(false);
+
+const previousPages = ref<{ month: number; year: number } | null>(null);
+
+function onPageChange(pages: Array<{ month: number; year: number }>) {
+  if (!previousPages.value) {
+    previousPages.value = pages[0];
+  } else if (
+    previousPages.value.month === pages[0].month &&
+    previousPages.value.year === pages[0].year
+  ) {
+    return;
+  }
+
+  previousPages.value = pages[0];
+  const intervalStart = new Date(pages[0].year, pages[0].month - 1, 1);
+  const intervalEnd = new Date(pages[1].year, pages[1].month, 1);
+
+  calendarLoading.value = true;
+
+  type ReceivedEvent = {
+    id: string;
+    start: string;
+    end: string;
+    status: string;
+    blockStartDay?: boolean;
+    blockEndDay?: boolean;
+  };
+
+  fetch(
+    `${
+      runtimeConfig.public.baseUrl
+    }/api/v1/public/netBS/apmbs/cabane-monthly-events/${
+      props.id
+    }${`?start=${intervalStart.toISOString()}&end=${intervalEnd.toISOString()}`}`
+  ).then((res) =>
+    res.json().then((data: Array<ReceivedEvent>) => {
+      let nextAttributes: Array<object> = [];
+      const nextDisabledDates: Array<Date> = [];
+
+      for (const range of data) {
+        const { isFullDay, start, end } = parseGoogleEventDates(
+          range.start,
+          range.end
+        );
+
+        // Build disabledDates array
+        const nextStart = add(start, { days: 1 });
+        while (differenceInDays(end, nextStart) > 0) {
+          nextDisabledDates.push(new Date(nextStart.getTime()));
+          nextStart.setDate(nextStart.getDate() + 1);
+        }
+
+        if (!!range.blockStartDay) {
+          nextDisabledDates.push(new Date(start.getTime()));
+        }
+
+        if (!!range.blockEndDay) {
+          nextDisabledDates.push(new Date(end.getTime()));
+        }
+
+        nextAttributes = [
+          ...nextAttributes,
+          ...eventToAttribute(start, end, isFullDay),
+        ];
+      }
+
+      monthlyAttributes.value = nextAttributes;
+      monthlyDisabledDates.value = nextDisabledDates;
+      calendarLoading.value = false;
+    })
+  );
+}
 
 const modalOpen = ref(false);
 const range = ref({
@@ -190,8 +299,6 @@ const schema = z.object({
   }),
 });
 
-console.log(cabane);
-
 const validated = reactive({
   conditions: cabane.value.conditions.map(() => true),
 });
@@ -199,12 +306,12 @@ const validated = reactive({
 const allGood = computed(() => validated.conditions.every((c: boolean) => c));
 
 const state = reactive({
-  email: "",
-  firstname: "",
-  lastname: "",
-  phone: "",
-  unit: "",
-  description: "",
+  email: "guillaume.hochet@gmail.com",
+  firstname: "guillaume",
+  lastname: "hochet",
+  phone: "0774117718",
+  unit: "ampbs",
+  description: "salut c'est cool",
   timePeriod: 0,
 });
 
@@ -218,6 +325,20 @@ async function onSubmit(event: FormSubmitEvent<z.infer<typeof schema>>) {
 }
 
 const isLoading = ref(false);
+
+function dateToLocalISO(date: Date) {
+  const off = date.getTimezoneOffset();
+  const absoff = Math.abs(off);
+  return (
+    new Date(date.getTime() - off * 60 * 1000).toISOString().substr(0, 23) +
+    (off > 0 ? "-" : "+") +
+    Math.floor(absoff / 60)
+      .toFixed(0)
+      .padStart(2, "0") +
+    ":" +
+    (absoff % 60).toString().padStart(2, "0")
+  );
+}
 
 async function onSend() {
   const data = {
@@ -244,6 +365,11 @@ async function onSend() {
   }
 
   isLoading.value = true;
+  const payload = {
+    ...data,
+    start: dateToLocalISO(data.start!),
+    end: dateToLocalISO(data.end!),
+  };
 
   await fetch(
     `${runtimeConfig.public.baseUrl}/api/v1/public/netBS/apmbs/cabane-reservation/${props.id}`,
@@ -252,7 +378,7 @@ async function onSend() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     }
   );
 
