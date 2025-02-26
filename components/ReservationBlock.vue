@@ -13,22 +13,34 @@
           >
             Choisissez des dates
           </h4>
-          <client-only>
-            <VDatePicker
-              class="border border-slate-300 border-solid w-full dark:border-slate-700"
-              v-model.range="range"
-              expanded
-              is24hr
-              is-dark="system"
-              :disabled-dates="disabledDates"
-              :rules="cabane.availabilityRules"
-              :attributes="monthlyAttributes"
-              :mode="
-                (cabane.timePeriods || []).length > 0 ? undefined : 'dateTime'
-              "
-              :columns="columns"
-              @update:pages="onPageChange"
-          /></client-only>
+          <div class="relative">
+            <client-only>
+              <VDatePicker
+                class="border border-slate-300 border-solid w-full dark:border-slate-700"
+                v-model.range="range"
+                expanded
+                is24hr
+                is-dark="system"
+                :disabled-dates="disabledDates"
+                :rules="cabane.availabilityRules"
+                :attributes="monthlyAttributes"
+                :mode="
+                  (cabane.timePeriods || []).length > 0 ? undefined : 'dateTime'
+                "
+                :columns="columns"
+                @update:pages="onPageChange"
+            /></client-only>
+            <div
+              v-if="calendarLoading"
+              class="absolute top-0 left-0 w-full h-full p-1 z-10"
+            >
+              <div
+                class="rounded-xl backdrop-blur w-full h-full bg-white/70 dark:bg-slate-900/70 flex items-center justify-center"
+              >
+                <Spinner />
+              </div>
+            </div>
+          </div>
           <UFormGroup
             label="Période de réservation"
             name="timePeriod"
@@ -99,6 +111,18 @@
           :text="cond"
           v-model="validated.conditions[i]"
         />
+        <div
+          v-if="error"
+          class="mt-3 dark:bg-red-800/50 border-2 border-solid dark:border-red-800 p-4 bg-red-200 border-red-500 text-slate-800 dark:text-white rounded"
+        >
+          <p class="font-semibold">
+            Une erreur est survenue, veuillez réessayer plus tard ou nous
+            contacter par e-mail.
+          </p>
+          <p class="text-xs mt-2 max-h-[200px] overflow-auto opacity-70">
+            {{ error }}
+          </p>
+        </div>
         <UButton
           :disabled="!allGood"
           color="blue"
@@ -162,40 +186,22 @@ const cabane = ref<{
     minuteEnd: string;
   }>;
 }>(
-  {
-    nom: "Moillettaz",
-    availabilityRules: undefined,
-    prices: undefined,
-    disabledDates: undefined,
-    conditions: [
-      "Je fais cette réservation pour une activité scoute\r",
-      "J'amène mes sacs poubelle taxés et les emmène avec moi\r",
-      "Je respecte les pâturages, forêts et ruisseaux environnants\r",
-      "Je reprend mes déchets et tout le matériel ammené en partant\r",
-      "Je déclare tout dégât ou problème rencontré sans délai\r",
-      "Avant l'arrivée de l'intendant(e), j'ai nettoyé les locaux, fermé les fenêtres et volets et éteint les lumières\r",
-      "J'attends l'intendant(e) pour effectuer l'état des lieux et la remise des clés",
-    ],
-    timePeriods: [],
-  }
-  /*
   await fetch(
     `${runtimeConfig.public.baseUrl}/api/v1/public/netBS/apmbs/cabane-metadata/${props.id}`
   ).then((res) =>
     res.json().then((data) => {
-    const availabilityRulesParsed = tryParse(data.availabilityRules);
-    const availabilityRules =
-      availabilityRulesParsed && availabilityRulesParsed.length > 0
-        ? availabilityRulesParsed
-        : undefined;
-    return {
-      ...data,
-      disabledDates: tryParse(data.disabledDates),
-      availabilityRules,
-    };
-  })
-);
-*/
+      const availabilityRulesParsed = tryParse(data.availabilityRules);
+      const availabilityRules =
+        availabilityRulesParsed && availabilityRulesParsed.length > 0
+          ? availabilityRulesParsed
+          : undefined;
+      return {
+        ...data,
+        disabledDates: tryParse(data.disabledDates),
+        availabilityRules,
+      };
+    })
+  )
 );
 
 /* Conflicts attributes */
@@ -207,7 +213,6 @@ const disabledDates = computed(() => [
 ]);
 
 const calendarLoading = ref(false);
-
 const previousPages = ref<{ month: number; year: number } | null>(null);
 
 function onPageChange(pages: Array<{ month: number; year: number }>) {
@@ -300,18 +305,18 @@ const schema = z.object({
 });
 
 const validated = reactive({
-  conditions: cabane.value.conditions.map(() => true),
+  conditions: cabane.value.conditions.map(() => false),
 });
 
 const allGood = computed(() => validated.conditions.every((c: boolean) => c));
 
 const state = reactive({
-  email: "guillaume.hochet@gmail.com",
-  firstname: "guillaume",
-  lastname: "hochet",
-  phone: "0774117718",
-  unit: "ampbs",
-  description: "salut c'est cool",
+  email: undefined,
+  firstname: undefined,
+  lastname: undefined,
+  phone: undefined,
+  unit: undefined,
+  description: undefined,
   timePeriod: 0,
 });
 
@@ -339,6 +344,8 @@ function dateToLocalISO(date: Date) {
     (absoff % 60).toString().padStart(2, "0")
   );
 }
+
+const error = ref<string | null>(null);
 
 async function onSend() {
   const data = {
@@ -371,7 +378,7 @@ async function onSend() {
     end: dateToLocalISO(data.end!),
   };
 
-  await fetch(
+  const res = await fetch(
     `${runtimeConfig.public.baseUrl}/api/v1/public/netBS/apmbs/cabane-reservation/${props.id}`,
     {
       method: "POST",
@@ -382,14 +389,21 @@ async function onSend() {
     }
   );
 
+  if (!res.ok) {
+    const text = await res.text();
+    error.value = text;
+    isLoading.value = false;
+    return;
+  }
+
   modalOpen.value = false;
   isLoading.value = false;
-  state.email = "";
-  state.firstname = "";
-  state.lastname = "";
-  state.phone = "";
-  state.unit = "";
-  state.description = "";
+  state.email = undefined;
+  state.firstname = undefined;
+  state.lastname = undefined;
+  state.phone = undefined;
+  state.unit = undefined;
+  state.description = undefined;
   range.value.start = null;
   range.value.end = null;
 
