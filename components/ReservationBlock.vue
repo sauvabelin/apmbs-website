@@ -216,6 +216,7 @@ const calendarLoading = ref(false);
 const previousPages = ref<{ month: number; year: number } | null>(null);
 
 function onPageChange(pages: Array<{ month: number; year: number }>) {
+  console.log(previousPages.value, pages);
   if (!previousPages.value) {
     previousPages.value = pages[0];
   } else if (
@@ -227,7 +228,10 @@ function onPageChange(pages: Array<{ month: number; year: number }>) {
 
   previousPages.value = pages[0];
   const intervalStart = new Date(pages[0].year, pages[0].month - 1, 1);
-  const intervalEnd = new Date(pages[1].year, pages[1].month, 1);
+  let intervalEnd = new Date(pages[0].year, pages[0].month, 1);
+  if (pages.length > 1) {
+    intervalEnd = new Date(pages[1].year, pages[1].month, 1);
+  }
 
   calendarLoading.value = true;
 
